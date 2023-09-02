@@ -1,0 +1,197 @@
+#import pandas
+import pandas as pd
+
+#Criando e visualizando a base de treino
+treino = pd.read_csv('train.csv')
+treino.head(3)
+
+#Verificando as informações da base
+treino.info()
+
+#Verificando o tipo de dado
+treino.dtypes.value_counts()
+
+# o valores nulos
+treino.isnull().sum().sort_values(ascending=False).head(5)
+
+#Teste
+#Criando e visualizando a base de teste
+teste = pd.read_csv('test.csv')
+
+#Verificando as informações da base
+teste.info()
+
+#Verificando o tipo de dado
+teste.dtypes.value_counts()
+
+#Verificando o valores nulos
+teste.isnull().sum().sort_values(ascending=False).head()
+
+# Verificando a cardinalidade dos dados
+# A cardinalidade define valores que variam muito e não ajudam no modelo para generalização. Podemos descartar essas informaçõs na nossa analise.
+treino.nunique().sort_values(ascending=False)
+
+#Tratando das colunas com alta cardinalidade
+treino = treino.drop(['Name','Ticket','Cabin'], axis=1])
+teste = teste.drop(['Name','Ticket','Cabin'], axis=1])
+
+#Tratando os valores nulos nas colunas 
+#verificando a média das idades para a base de treino
+treino.Age.mean()
+
+#verificando a média das idades para a base de teste
+teste.Age.mean()
+
+#substituindo os valores vazios na coluna de idade
+treino.loc[treino.Age.isnull(),'Age'] = treino.Age.mean()
+
+#substituindo os valores vazios na coluna de idade
+teste.loc[teste.Age.isnull(),'Age'] = teste.Age.mean()
+
+===========
+#Verificando os valores da coluna Embarkes
+treino.Embarked.values_counts()
+===========
+#tratando os espaços vazios na coluna Embarked (Usando a moda)
+treino.loc[treino.Embarked.isnull(), 'Embarked'] = treino.Embarked.mode()[0]
+
+# Verificando os valores na coluna Embarked
+teste.Embarked.value_counts()
+
+#tratando os espaços vazios na coluna Embarked (Usando a moda)
+teste.loc[teste.Embarked.isnull(),'Embarked'] = teste.mode()[0]
+
+#Verificando a coluna de testes
+teste.Embarked.value_counts()
+
+#Tratando a media da coluna Fare para a base teste
+teste.loc[teste.Fare.isnull(), 'Fare'] = teste.Fare.mean()
+
+#Tratando a media da coluna Fare para a base treino
+treino.loc[treino.Fare.isnull(), 'Fare'] = treino.Fare.mean()
+
+#Verificando teste
+treino.isnull().sum().sort_values(ascending=False).head
+
+#Verificando treino
+teste.isnull().sum().sort_values(ascending=False).head
+
+#Verificando as colunas de texto
+col_treino_nr = treino.columns[treino.dtypes != 'object']
+
+#Selecionando apenas os valores numericos da base de treino
+treino_nr = treino.loc[:,col_treino_nr]
+
+#Verificando as colunas de texto
+col_teste_nr = teste.columns[teste.dtypes != 'object']
+
+#Selecionando apenas os valores numericos da base de teste
+teste_nr = teste.loc[:,col_teste_nr]
+
+#Treinando o modelo
+#Importando o train_test_split
+from sklearn.model_slection import train_test_split
+
+#Separando a base de treino em X e y
+
+X = treino_nr.drop(['PassengerId','Survived'], axis=1)
+y = treino.Survived
+
+Separando em treino e validação
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.33, random_state=42)
+
+#Para a arvore de classificação
+#Fazendo a importação
+from sklearn import tree
+
+#criando o classificador
+clf_ac = tree.DecisionTreeClassifier(random_state=42)
+
+#fazendo o fit com os dados
+cfl_ac = clf_ac.fit(X_train, y_train)
+
+#Fazendo a previsão
+y_pred_ac = clf_ac.predict(X_val)
+
+## KNN
+#Fazendo a importação
+from sklearn.neighbors import KNeighborsClassifier
+
+#criando o classificador
+clf_knn = KNeighborsClassifier(n_neighbors=3)
+
+#fazendo o fit com os dados
+cfl_knn = clf_knn.fit(X_train, y_train)
+
+#Fazendo a previsão
+y_pred_knn = clf_knn.predict(X_val)
+
+## Regressão Logística
+#Fazendo a importação
+from sklearn.linear_model import LogisticRegression
+
+#criando o classificador
+clf_rl = LogisticRegression(random_state=42)
+
+#fazendo o fit com os dados
+cfl_rl = clf_rl.fit(X_train, y_train)
+
+#Fazendo a previsão
+y_pred_cl = clf_rl.predict(X_val)
+
+## Avaliando os modelos
+### Acuracia
+# Importando
+from sklearn.metrics import accuracy_score
+
+#Para a árvore
+accuracy_score(y_val, y_pred_ac)
+
+#Para o KNN
+accuracy_score(y_val, y_pred_knn)
+
+#Para a regressão logística
+accuracy_score(y_val, y_pred_cl)
+
+### Matriz de confusão
+from sklearn.metrics import confusion_matrix
+
+#Para a árvore
+confusion_matrix(y_val, y_pred_ac)
+
+#Para o KNN
+confusion_matrix(y_val, y_pred_knn)
+
+#Para a regressão logística
+confusion_matrix(y_val, y_pred_cl)
+
+## Fazendo a previsão para os dados de teste
+#Visaualizando o X_train
+X_train.head()
+
+#Visualizando a base de teste
+teste_nr.head()
+
+#Eliminando a coluna Passengerid para deixar as duas bases identicas
+X_teste  = teste_nr.drop('PassengerId',axis=1)
+
+#Utilizando a regressão logistica na base de teste
+y_pred = clf_rl.predict(X_teste)
+
+#Criando uma nova coluna com previsão na base de teste
+teste['Survived'] = y_pred
+
+#Selecionando apenas a coluna Id e survived para fazer o envio
+base_envio = teste[['PassengerId, 'Survived']]
+
+#exportando para csv
+base_envio.to_csv('resultados.csv', index=false)
+
+
+ 
+
+
+
+
+
+
